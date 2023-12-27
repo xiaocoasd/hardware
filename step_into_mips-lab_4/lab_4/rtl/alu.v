@@ -23,11 +23,16 @@
 module alu(
 	input wire[31:0] a,b,
 	input wire[5:0] op,
+	input wire[4:0]sa,
 	output reg[31:0] y,
 	output reg overflow
     );
+    wire [4:0]d;
+    assign d = a[4:0];
 	always @(*) begin
 		case (op)
+		    6'b101000: y <= b << d; //sllv 
+		    6'b001000: y <= b << sa; //sll
 		    6'b000110: y <= a ^ b;  //xorºÍxori
 		    6'b000101: y <= ~(a | b);//nor
 			6'b010001: y <= a & b;  //andºÍandi

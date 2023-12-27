@@ -43,10 +43,12 @@ module maindec(
 			6'b000000:
 			    begin
 			        case(funct)
-			        6'b100111:controls <= 13'b1100000_000101;//norÓï¾ä
-			        6'b100100:controls <= 13'b1100000_010001;//andÓï¾ä
-			        6'b100101:controls <= 13'b1100000_000100;//orÓï¾ä
-			        6'b100110:controls <= 13'b1100000_000110;//xorÖ¸Áî
+			        6'b000100:controls <= 13'b1100000_101000;//sllv
+			        6'b000000:controls <= 13'b1100000_001000;//sll
+			        6'b100111:controls <= 13'b1100000_000101;//nor
+			        6'b100100:controls <= 13'b1100000_010001;//and
+			        6'b100101:controls <= 13'b1100000_000100;//or
+			        6'b100110:controls <= 13'b1100000_000110;//xor
 			        default:controls<=13'b0000000_000000;
 			        endcase
 			    end
