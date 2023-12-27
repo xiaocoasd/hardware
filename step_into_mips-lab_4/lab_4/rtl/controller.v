@@ -44,7 +44,7 @@ module controller(
 	wire memtoregD,memwriteD,alusrcD,
 		regdstD,regwriteD;
 	wire[5:0] alucontrolD;
-
+    
 	//execute stage
 	wire memwriteE;
 
@@ -55,6 +55,7 @@ module controller(
 		regdstD,regwriteD,
 		jumpD,
 		aluopD
+		
 		);
     assign alucontrolD = aluopD;
 	assign pcsrcD = branchD & equalD;
