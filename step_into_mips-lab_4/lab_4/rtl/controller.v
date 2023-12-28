@@ -23,59 +23,93 @@
 module controller(
 	input wire clk,rst,
 	//decode stage
-	output wire pcsrcD,branchD,equalD,jumpD,
+	output reg pcsrcD,
+	output wire[3:0]branchD,
+	input wire equalD,equalD2,equalD3,equalD4,equalD5,
+	output wire [1:0]jumpD,
 	input wire [31:0]instrD,
 	//execute stage
 	input wire flushE,
 	output wire memtoregE,alusrcE,
-	output wire regdstE,regwriteE,	
+	output wire regdstE,regwriteE,
+	output wire apE,apE2,	
 	output wire[5:0] alucontrolE,
 
 	//mem stage
 	output wire memtoregM,memwriteM,
 				regwriteM,
+	output wire apM,apM2,
 	//write back stage
-	output wire memtoregW,regwriteW
-
+	output wire memtoregW,regwriteW,
+	output wire apW,apW2,
+    output wire imm_ctrlD,
+    output wire[2:0]DMread_ctrlM,
+    output wire[1:0]DMwrite_ctrlM,
+    output wire isJRD,
+    output wire isJALRD
     );
 	
 	//decode stage
+	wire apD,apD2;
 	wire[5:0] aluopD;
 	wire memtoregD,memwriteD,alusrcD,
 		regdstD,regwriteD;
 	wire[5:0] alucontrolD;
-    
+    wire[2:0]DMread_ctrlD;
+    wire[2:0]DMread_ctrlE;
+    wire[1:0]DMwrite_ctrlD;
+    wire[1:0]DMwrite_ctrlE;
 	//execute stage
 	wire memwriteE;
-
 	maindec md(
 		instrD,
 		memtoregD,memwriteD,
 		branchD,alusrcD,
 		regdstD,regwriteD,
 		jumpD,
-		aluopD
-		
+		aluopD,
+		imm_ctrlD,
+		DMread_ctrlD,
+		DMwrite_ctrlD,
+		isJRD,
+		isJALRD
 		);
     assign alucontrolD = aluopD;
-	assign pcsrcD = branchD & equalD;
-
+	always@(branchD)
+    begin
+      case(branchD)
+        4'b0001:pcsrcD <= equalD;//BEQ
+        4'b0010:pcsrcD <= ~equalD;//BNE
+        4'b0011:pcsrcD <= equalD2;//BGEZ
+        4'b1000:pcsrcD <= equalD2;//BGEZAL
+        4'b0110:pcsrcD <= equalD3;//BGTZ
+        4'b0111:pcsrcD <= equalD4;//BLEZ
+        4'b0100:pcsrcD <= equalD5;//BLTZ
+        4'b0101:pcsrcD <= equalD5;//BLTZAL
+        default:pcsrcD <= 0;
+      endcase
+    end
+    branch_jump_dec bd(
+        instrD,
+        apD	,
+        apD2
+	);
 	//pipeline registers
-	floprc #(11) regE(
+	floprc #(20) regE(
 		clk,
 		rst,
 		flushE,
-		{memtoregD,memwriteD,alusrcD,regdstD,regwriteD,alucontrolD},
-		{memtoregE,memwriteE,alusrcE,regdstE,regwriteE,alucontrolE}
+		{memtoregD,memwriteD,alusrcD,regdstD,regwriteD,alucontrolD,DMread_ctrlD,DMwrite_ctrlD,apD,apD2},
+		{memtoregE,memwriteE,alusrcE,regdstE,regwriteE,alucontrolE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2}
 		);
-	flopr #(8) regM(
+	flopr #(15) regM(
 		clk,rst,
-		{memtoregE,memwriteE,regwriteE},
-		{memtoregM,memwriteM,regwriteM}
+		{memtoregE,memwriteE,regwriteE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2},
+		{memtoregM,memwriteM,regwriteM,DMread_ctrlM,DMwrite_ctrlM,apM,apM2}
 		);
-	flopr #(8) regW(
+	flopr #(10) regW(
 		clk,rst,
-		{memtoregM,regwriteM},
-		{memtoregW,regwriteW}
+		{memtoregM,regwriteM,apM,apM2},
+		{memtoregW,regwriteW,apW,apW2}
 		);
 endmodule

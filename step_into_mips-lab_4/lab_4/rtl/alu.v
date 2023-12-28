@@ -29,6 +29,7 @@ module alu(
     );
 	always @(*) begin
 		case (op)
+		    6'b010001: y <=$signed(a)+$signed(b);//l-s
 		    6'b000110: y <= a ^ b;  //xor??xori
 		    6'b000101: y <= ~(a | b);//nor
 			6'b010001: y <= a & b;  //and??andi
