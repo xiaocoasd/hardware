@@ -46,7 +46,8 @@ module controller(
     output wire[2:0]DMread_ctrlM,
     output wire[1:0]DMwrite_ctrlM,
     output wire isJRD,
-    output wire isJALRD
+    output wire isJALRD,
+    input wire stallD
     );
 	
 	//decode stage
@@ -95,9 +96,10 @@ module controller(
         apD2
 	);
 	//pipeline registers
-	floprc #(20) regE(
+	flopenrc #(20) regE(
 		clk,
 		rst,
+		~stallD,
 		flushE,
 		{memtoregD,memwriteD,alusrcD,regdstD,regwriteD,alucontrolD,DMread_ctrlD,DMwrite_ctrlD,apD,apD2},
 		{memtoregE,memwriteE,alusrcE,regdstE,regwriteE,alucontrolE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2}

@@ -24,9 +24,11 @@ module hazard(
 	output wire stallF,
 	//decode stage
 	input wire[4:0] rsD,rtD,
+	input wire [5:0]alucontrolE,
 	input wire [3:0] branchD,
 	output wire forwardaD,forwardbD,
 	output wire stallD,
+	output wire stallE,
 	//execute stage
 	input wire[4:0] rsE,rtE,
 	input wire[4:0] writeregE,
@@ -42,10 +44,11 @@ module hazard(
 	//write back stage
 	input wire[4:0] writeregW,
 	input wire regwriteW,
-	input wire isJRD,isJALRD
+	input wire isJRD,isJALRD,
+	input wire div_ready
     );
 
-	wire lwstallD,branchstallD;
+	wire lwstallD,branchstallD,stall_divD;
 
 	//forwarding sources to D stage (branch equality)
 	assign forwardaD = (rsD != 0 & rsD == writeregM & regwriteM);
@@ -79,6 +82,7 @@ module hazard(
 	end
 
 	//stalls
+	assign stall_divE = ((alucontrolE==6'b011100|alucontrolE==6'b001100) & ~div_ready);
 	assign #1 lwstallD = memtoregE & (rtE == rsD | rtE == rtD);
 	assign jumpstallD = (isJALRD | isJRD) & 
 			(regwriteE & 				// 写寄存器，因为在Ex阶段，branch需要的结果还没算出来
@@ -90,7 +94,8 @@ module hazard(
 				(writeregE == rsD | writeregE == rtD) |
 				memtoregM &
 				(writeregM == rsD | writeregM == rtD));
-	assign #1 stallD = lwstallD | branchstallD| jumpstallD;
+	assign #1 stallD = lwstallD | branchstallD| jumpstallD |stall_divE;
+	assign #1 stallE = stall_divE;
 	assign #1 stallF = stallD;
 		//stalling D stalls all previous stages
 	assign #1 flushE = stallD;

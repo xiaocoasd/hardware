@@ -62,7 +62,8 @@ module mips(
 		DMread_ctrl,
 		DMwrite_ctrl,
 		isJRD,
-		isJALRD
+		isJALRD,
+		stallD
 		);
 	datapath dp(
 		clk,rst,
@@ -90,7 +91,8 @@ module mips(
 		regwriteW,apW,apW2,
 		imm_ctrlD,
 		isJRD,
-		isJALRD
+		isJALRD,
+		stallD
 	    );
 	
 endmodule

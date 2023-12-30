@@ -25,6 +25,8 @@ module alu(
 	input wire [4:0]sa,
 	input wire[5:0] op,
 	output reg[31:0] y,
+	input wire[63:0]hilo_in,
+	output reg[63:0]hilo_out,
 	output reg overflow
     );
 	always @(*) begin
@@ -46,6 +48,12 @@ module alu(
 			6'b101000: y <= b << a[4:0];//sllv;
 			6'b101001: y <= b >> a[4:0];//srlv;
 			6'b111001: y <= $signed(b) >>> a[4:0];//srav
+			6'b011011: hilo_out <= $signed(a) * $signed(b);//mult
+			6'b001011: hilo_out <= $unsigned(a) * $unsigned(b); //multu
+			6'b100000: hilo_out = {a,hilo_in[31:0]}; //mthi
+			6'b100001: hilo_out = {hilo_in[31:0],a}; //mtlo
+			6'b100010: y = hilo_in[63:32];//mfhi
+			6'b100011: y = hilo_in[31:0];//mflo
 			default : y <= 32'b0;
 		endcase	
 	end
