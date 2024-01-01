@@ -112,7 +112,6 @@ module datapath(
 	mux3 #(32) pcmux(pcnextbrFD,
 		{pcplus4D[31:28],instrD[25:0],2'b00},srcaD,
 		jumpD,pcnextFD);
-
 	//regfile (operates in decode and writeback)
 	regfile rf(clk,regwriteW,rsD,rtD,writeregW,resultW,srcaD,srcbD);
     //hilo_reg  hilo(clk,rst,hilo_weW,hi_alu_outW,lo_alu_outW,hiD,loD);

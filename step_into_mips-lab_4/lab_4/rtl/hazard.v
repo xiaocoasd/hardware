@@ -89,16 +89,18 @@ module hazard(
 			(writeregE == rsD | writeregE == rtD) |
 			memtoregM &					// 读mem，写寄存器，在Mem阶段，branch需要的结果还没从Mem读出来
 			(writeregM == rsD | writeregM == rtD));
-	assign #1 branchstallD = (branchD[3]|branchD[2]|branchD[1]| branchD[0]) &
+	assign branchstallD = (branchD[3]|branchD[2]|branchD[1]| branchD[0]) &
 				(regwriteE & 
 				(writeregE == rsD | writeregE == rtD) |
 				memtoregM &
 				(writeregM == rsD | writeregM == rtD));
-	assign #1 stallD = lwstallD | branchstallD| jumpstallD |stall_divE;
-	assign #1 stallE = stall_divE;
-	assign #1 stallF = stallD;
+	assign #1 stallD = stallE | ((lwstallD | branchstallD| jumpstallD)) ;
+	assign #1 stallF = stallD | (lwstallD | branchstallD| jumpstallD) ;
+	assign stallE =  stall_divE;
+	
 		//stalling D stalls all previous stages
-	assign #1 flushE = stallD;
+	assign #1 flushE = ((lwstallD | branchstallD | jumpstallD) & ~stallE);
+	assign #1 flushD =    ~stallE;
 		//stalling D flushes next stage
 	// Note: not necessary to stall D stage on store
   	//       if source comes from load;

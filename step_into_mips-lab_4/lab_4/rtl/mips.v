@@ -40,7 +40,7 @@ module mips(
     wire imm_ctrlD;
     wire [1:0]jumpD;
     wire [3:0]branchD;
-    
+    wire isJRD,isJALRD;
     
 	controller c(
 		clk,rst,
