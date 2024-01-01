@@ -39,15 +39,17 @@ module controller(
 	output wire memtoregM,memwriteM,
 				regwriteM,
 	output wire apM,apM2,
+	output wire cp0weM,cp0selM,flushM,
 	//write back stage
 	output wire memtoregW,regwriteW,
-	output wire apW,apW2,
+	output wire apW,apW2,flushW,
     output wire imm_ctrlD,
     output wire[2:0]DMread_ctrlM,
     output wire[1:0]DMwrite_ctrlM,
     output wire isJRD,
     output wire isJALRD,
-    input wire stallD
+    input wire stallD,
+    output wire breakD,syscallD,reserveD,eretD
     );
 	
 	//decode stage
@@ -62,6 +64,8 @@ module controller(
     wire[1:0]DMwrite_ctrlE;
 	//execute stage
 	wire memwriteE;
+	wire cp0weD,cp0weE;
+	wire cp0selD,cp0selE;
 	maindec md(
 		instrD,
 		memtoregD,memwriteD,
@@ -73,7 +77,10 @@ module controller(
 		DMread_ctrlD,
 		DMwrite_ctrlD,
 		isJRD,
-		isJALRD
+		isJALRD,
+		cp0weD,
+		cp0selD,
+		breakD,syscallD,reserveD,eretD
 		);
     assign alucontrolD = aluopD;
 	always@(branchD)
@@ -96,21 +103,21 @@ module controller(
         apD2
 	);
 	//pipeline registers
-	flopenrc #(20) regE(
+	flopenrc #(22) regE(
 		clk,
 		rst,
 		~stallD,
 		flushE,
-		{memtoregD,memwriteD,alusrcD,regdstD,regwriteD,alucontrolD,DMread_ctrlD,DMwrite_ctrlD,apD,apD2},
-		{memtoregE,memwriteE,alusrcE,regdstE,regwriteE,alucontrolE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2}
+		{memtoregD,memwriteD,alusrcD,regdstD,regwriteD,alucontrolD,DMread_ctrlD,DMwrite_ctrlD,apD,apD2,cp0weD,cp0selD},
+		{memtoregE,memwriteE,alusrcE,regdstE,regwriteE,alucontrolE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2,cp0weE,cp0selE}
 		);
-	flopr #(15) regM(
-		clk,rst,
-		{memtoregE,memwriteE,regwriteE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2},
-		{memtoregM,memwriteM,regwriteM,DMread_ctrlM,DMwrite_ctrlM,apM,apM2}
+	floprc #(20) regM(
+		clk,rst,flushM,
+		{memtoregE,memwriteE,regwriteE,DMread_ctrlE,DMwrite_ctrlE,apE,apE2,cp0weE,cp0selE},
+		{memtoregM,memwriteM,regwriteM,DMread_ctrlM,DMwrite_ctrlM,apM,apM2,cp0weM,cp0selM}
 		);
-	flopr #(10) regW(
-		clk,rst,
+	floprc #(20) regW(
+		clk,rst,flushW,
 		{memtoregM,regwriteM,apM,apM2},
 		{memtoregW,regwriteW,apW,apW2}
 		);

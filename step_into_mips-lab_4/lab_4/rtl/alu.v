@@ -31,30 +31,30 @@ module alu(
     );
 	always @(*) begin
 		case (op)
-		    6'b010001: y <=$signed(a)+$signed(b);//ÓÐ·ûºÅ¼Ó
+		    6'b010001: begin y = $signed(a) + $signed(b); overflow = (~y[31] & a[31] & b[31]) | (y[31] & ~a[31] & ~b[31]); end//ÓÐ·ûºÅ¼Ó
 		    6'b000001: y <=$unsigned(a)+$unsigned(b);//ÎÞ·ûºÅ¼Ó
-		    6'b010010: y <=$signed(a)-$signed(b);//ÓÐ·ûºÅ¼õ
-		    6'b000010: y <=$unsigned(a)-$unsigned(b);//ÎÞ·ûºÅ¼õ
-		    6'b010111: y <=$signed(a)<$signed(b);
-		    6'b000111: y <=$unsigned(a)<$unsigned(b);
-		    6'b000110: y <= a ^ b;  //xor??xori
-		    6'b000101: y <= ~(a | b);//nor
-			6'b010001: y <= a & b;  //and??andi
-			6'b000100: y <= a | b;  //or
-			6'b001010: y <= {b[15:0],16'b0};  //lui
-			6'b001000: y <=  b << sa;//sll
-			6'b001001: y <= b >> sa; // srl
-			6'b011001: y <= $signed(b) >>> sa;//sra
-			6'b101000: y <= b << a[4:0];//sllv;
-			6'b101001: y <= b >> a[4:0];//srlv;
-			6'b111001: y <= $signed(b) >>> a[4:0];//srav
-			6'b011011: hilo_out <= $signed(a) * $signed(b);//mult
-			6'b001011: hilo_out <= $unsigned(a) * $unsigned(b); //multu
-			6'b100000: hilo_out = {a,hilo_in[31:0]}; //mthi
-			6'b100001: hilo_out = {hilo_in[31:0],a}; //mtlo
-			6'b100010: y = hilo_in[63:32];//mfhi
-			6'b100011: y = hilo_in[31:0];//mflo
-			default : y <= 32'b0;
+		    6'b010010: begin y = $signed(a) - $signed(b); overflow = (~y[31] & a[31] & ~b[31]) | (y[31] & ~a[31] & b[31]); end//ÓÐ·ûºÅ¼õ
+		    6'b000010: y <=  $unsigned(a)-$unsigned(b);//ÎÞ·ûºÅ¼õ
+		    6'b010111: begin y <=$signed(a)<$signed(b);overflow = 0; end
+		    6'b000111: begin y <=$unsigned(a)<$unsigned(b);overflow = 0;end
+		    6'b000110: begin y  = a ^ b;     overflow = 0; end //xor??xori
+		    6'b000101: begin y  = ~(a | b);  overflow = 0; end//nor
+			6'b010001: begin y = a & b;   overflow = 0; end  //and??andi
+			6'b000100: begin y = a | b;   overflow = 0; end  //or
+			6'b001010: begin y ={ b[15:0],16'b0 };overflow = 0; end  //lui
+			6'b001000: begin y <=  b << sa;overflow = 0;end//sll
+			6'b001001: begin y <= b >> sa;overflow = 0;end // srl
+			6'b011001: begin y <= $signed(b) >>> sa;overflow = 0;end//sra
+			6'b101000: begin y <= b << a[4:0];overflow = 0;end//sllv;
+			6'b101001: begin y <= b >> a[4:0];overflow = 0;end//srlv;
+			6'b111001: begin y <= $signed(b) >>> a[4:0];overflow = 0;end//srav
+			6'b011011: begin hilo_out <= $signed(a) * $signed(b);overflow = 0;end//mult
+			6'b001011: begin hilo_out <= $unsigned(a) * $unsigned(b);overflow = 0;end //multu
+			6'b100000: begin hilo_out = {a,hilo_in[31:0]};overflow = 0;end //mthi
+			6'b100001: begin hilo_out = {hilo_in[31:0],a};overflow = 0;end //mtlo
+			6'b100010: begin y = hilo_in[63:32];overflow = 0;end//mfhi
+			6'b100011: begin y = hilo_in[31:0];overflow = 0;end//mflo
+			default :  begin y = 32'h00000000; overflow = 0; hilo_out = 0;end  
 		endcase	
 	end
 endmodule

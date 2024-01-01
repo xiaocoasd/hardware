@@ -1,25 +1,5 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2017/11/22 10:23:13
-// Design Name: 
-// Module Name: hazard
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 module hazard(
+    output wire [31:0]newPC,
 	//fetch stage
 	output wire stallF,
 	//decode stage
@@ -45,7 +25,14 @@ module hazard(
 	input wire[4:0] writeregW,
 	input wire regwriteW,
 	input wire isJRD,isJALRD,
-	input wire div_ready
+	input wire div_ready,
+	input wire[31:0] exception_type,
+	input wire overflowM,
+	input wire [31:0] epc,
+	output wire flushF,
+	output wire flushD,
+	output wire flushM,
+	output wire flushW
     );
 
 	wire lwstallD,branchstallD,stall_divD;
@@ -82,12 +69,21 @@ module hazard(
 	end
 
 	//stalls
+	 assign newPC = (exception_type == 32'h0000_0001)? 32'hbfc00380:
+                   (exception_type == 32'h0000_0004)? 32'hbfc00380:
+                   (exception_type == 32'h0000_0005)? 32'hbfc00380:
+                   (exception_type == 32'h0000_0008)? 32'hbfc00380:
+                   (exception_type == 32'h0000_0009)? 32'hbfc00380:
+                   (exception_type == 32'h0000_000a)? 32'hbfc00380:
+                   (exception_type == 32'h0000_000c)? 32'hbfc00380:
+                   (exception_type == 32'h0000_000e)? epc:
+                   32'b0;
 	assign stall_divE = ((alucontrolE==6'b011100|alucontrolE==6'b001100) & ~div_ready);
 	assign #1 lwstallD = memtoregE & (rtE == rsD | rtE == rtD);
 	assign jumpstallD = (isJALRD | isJRD) & 
-			(regwriteE & 				// 写寄存器，因为在Ex阶段，branch需要的结果还没算出来
+			(regwriteE & 				// д????????????Ex??Σ?branch???????????????
 			(writeregE == rsD | writeregE == rtD) |
-			memtoregM &					// 读mem，写寄存器，在Mem阶段，branch需要的结果还没从Mem读出来
+			memtoregM &					// ??mem??д?????????Mem??Σ?branch????????????Mem??????
 			(writeregM == rsD | writeregM == rtD));
 	assign branchstallD = (branchD[3]|branchD[2]|branchD[1]| branchD[0]) &
 				(regwriteE & 
@@ -96,11 +92,14 @@ module hazard(
 				(writeregM == rsD | writeregM == rtD));
 	assign #1 stallD = stallE | ((lwstallD | branchstallD| jumpstallD)) ;
 	assign #1 stallF = stallD | (lwstallD | branchstallD| jumpstallD) ;
-	assign stallE =  stall_divE;
+	assign stallE =    stall_divE;
 	
 		//stalling D stalls all previous stages
 	assign #1 flushE = ((lwstallD | branchstallD | jumpstallD) & ~stallE);
-	assign #1 flushD =    ~stallE;
+	assign    flushF = 1'b0;
+	assign    flushD=(exception_type!=0);
+	assign    flushM=(exception_type!=0);
+	assign    flushW=(exception_type!=0);
 		//stalling D flushes next stage
 	// Note: not necessary to stall D stage on store
   	//       if source comes from load;

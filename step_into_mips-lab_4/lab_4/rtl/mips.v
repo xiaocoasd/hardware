@@ -41,7 +41,11 @@ module mips(
     wire [1:0]jumpD;
     wire [3:0]branchD;
     wire isJRD,isJALRD;
-    
+    wire  cp0weM;
+    wire  cp0selM;
+    wire breakD,syscallD,reserveD,eretD;
+    wire flushM;
+    wire flushW;
 	controller c(
 		clk,rst,
 		//decode stage
@@ -55,15 +59,16 @@ module mips(
 
 		//mem stage
 		memtoregM,memwriteM,
-		regwriteM,apM,apM2,
+		regwriteM,apM,apM2, cp0weM,cp0selM,flushM,
 		//write back stage
-		memtoregW,regwriteW,apW,apW2,
+		memtoregW,regwriteW,apW,apW2,flushW,
 		imm_ctrlD,
 		DMread_ctrl,
 		DMwrite_ctrl,
 		isJRD,
 		isJALRD,
-		stallD
+		stallD,
+		breakD,syscallD,reserveD,eretD
 		);
 	datapath dp(
 		clk,rst,
@@ -84,15 +89,18 @@ module mips(
 		//mem stage
 		memtoregM,
 		regwriteM,apM,apM2,
+		flushW,
 		aluoutM,writedataM,
 		readdataM,
+		cp0weM ,cp0selM,flushM,
 		//writeback stage
 		memtoregW,
 		regwriteW,apW,apW2,
 		imm_ctrlD,
 		isJRD,
 		isJALRD,
-		stallD
+		stallD,
+		breakD,syscallD,reserveD,eretD
 	    );
 	
 endmodule
