@@ -91,7 +91,7 @@ module datapath(
 	wire [31:0] bad_addr_i;
 	wire [31:0] cp0out_data;
     wire [4:0] saD;
-    wire [31:0] aluout2E,aluout2M;
+    wire [31:0] aluout2E,aluout2M,aluout2W;
     wire [31:0] count_o;
     wire [31:0] compare_o;
     wire [31:0] status_o;
@@ -245,9 +245,9 @@ module datapath(
     //mux2 #(32) lo_div(lo_alu_outE,lo_div_outE,div_signalE,lo_mux_outE);
 	//mem stage
 	floprc #(32) r1M(clk,rst,flushM,srcb2E,writedataM);
-	floprc #(32) r2M(clk,rst,flushM,aluoutE,aluoutM);
+	//floprc #(32) r2M(clk,rst,flushM,aluoutE,aluoutM);
 	floprc #(5) r3M(clk,rst,flushM,writeregE,writeregM);
-    //floprc #(32) r4M(clk,rst,flushM,pcplus8E,pcplus8M);
+    floprc #(32) r4M(clk,rst,flushM,pcplus8E,pcplus8M);
     floprc #(5) r5M(clk,rst,flushM,rdE,rdM);
     floprc #(32) r6M(clk,rst,flushM,srcb3E,srcbM);
     floprc #(32) r7M(clk,rst,flushM,pcE,pcM);
@@ -273,9 +273,9 @@ module datapath(
     floprc #(32) r1W(clk,rst,flushW,aluoutM,aluoutW);
 	floprc #(32) r2W(clk,rst,flushW,readdataM,readdataW);
 	floprc #(5) r3W(clk,rst,flushW,writeregM,writeregW);
+	floprc #(32) r4W(clk,rst,flushM,pcplus8M,pcplus8W);
 	
-	
-	mux2 #(32) resmux(aluoutW,readdataW,memtoregW,resultW);
+	mux2 #(32) resmux(aluoutW,readdataW, memtoregW,resultW);
 	cp0_reg cp0reg(
 		.clk(clk),  
 		.rst(rst),
