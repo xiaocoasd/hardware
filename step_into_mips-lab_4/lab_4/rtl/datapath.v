@@ -146,7 +146,7 @@ module datapath(
 	//next PC logic (operates in fetch an decode)
 	mux2 #(32) pcbrmux(pcplus4F,pcbranchD,pcsrcD,pcnextbrFD);
 	mux3 #(32) pcmux(pcnextbrFD,
-		{pcplus4D[31:28],instrD[25:0],2'b00},srcaD,
+		{pcplus4D[31:28],instrD[25:0],2'b00},srca2D,
 		jumpD,pcnextFD);
 	//regfile (operates in decode and writeback)
 	regfile rf(clk,regwriteW,rsD,rtD,writeregW,resultW,srcaD,srcbD);
